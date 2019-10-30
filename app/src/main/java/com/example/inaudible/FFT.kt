@@ -1,6 +1,5 @@
 package com.example.inaudible
 
-package com.example.cs442_hw2
 
 /*
  *  Copyright 2006-2007 Columbia University.

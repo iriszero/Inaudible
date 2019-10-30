@@ -10,16 +10,7 @@ import androidx.core.content.ContextCompat.getSystemService
 import android.icu.lang.UCharacter.GraphemeClusterBreak.T
 import android.media.AudioFormat.ENCODING_PCM_16BIT
 import android.media.AudioFormat.CHANNEL_IN_MONO
-import androidx.core.app.ComponentActivity.ExtraData
-import androidx.core.content.ContextCompat.getSystemService
-import android.icu.lang.UCharacter.GraphemeClusterBreak.T
 import android.media.AudioFormat
-import androidx.core.app.ComponentActivity.ExtraData
-import androidx.core.content.ContextCompat.getSystemService
-import android.icu.lang.UCharacter.GraphemeClusterBreak.T
-import androidx.core.app.ComponentActivity.ExtraData
-import androidx.core.content.ContextCompat.getSystemService
-import android.icu.lang.UCharacter.GraphemeClusterBreak.T
 
 
 
@@ -37,25 +28,26 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateAudioData() {
         var sData = ShortArray(BufferSize)
-        recorder.read(sData, 0, BufferSize);
+        recorder!!.read(sData, 0, BufferSize);
         var ret = FFT(n=512).getFreqSpectrumFromShort(sData)
 
-        print(ret.toString())
+        print(ret)
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        recorder = AudioRecord(MediaRecorder.AudioSource.MIC,
+        this.recorder = AudioRecord(MediaRecorder.AudioSource.MIC,
                 RECORDER_SAMPLERATE, RECORDER_CHANNELS,
                 RECORDER_AUDIO_ENCODING, BufferSize)
 
-        recorder!!.startRecording()
+        this.recorder!!.startRecording()
 
-        recordingThread = Thread(Runnable { updateAudioData() }, "AudioRecorder Thread")
+        recordingThread = Thread(Runnable {
+            //updateAudioData()
+        }, "AudioRecorder Thread")
         recordingThread!!.start()
-
-
 
     }
 }
