@@ -42,6 +42,8 @@ class MainActivity : AppCompatActivity() {
     private var displayText: String = ""
 
     private val MY_PERMISSIONS_AUDIO_RECORDING = 0x0000001
+    private val MSG_PERMITION_DENIED = "Permission Request Denied"
+
 
     private fun getVisualizedString(freqData: DoubleArray): String {
         var s: String = ""
@@ -143,7 +145,7 @@ class MainActivity : AppCompatActivity() {
     private fun changeText1(str : String) {
         runOnUiThread {
             val text1 : TextView = findViewById(R.id.text1)
-            text1.setText(displayText)
+            text1.setText(str)
         }
     }
     private fun requestAudioPermission() {
@@ -155,19 +157,9 @@ class MainActivity : AppCompatActivity() {
             != PackageManager.PERMISSION_GRANTED) {
 
             // Permission is not granted
-            // Should we show an explanation?
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                    Manifest.permission.RECORD_AUDIO)) {
-                // Show an explanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
-                changeText1("We need your permission for audio recording.")
-            } else {
-                // No explanation needed, we can request the permission.
-                ActivityCompat.requestPermissions(this,
-                    arrayOf(Manifest.permission.RECORD_AUDIO),
-                    MY_PERMISSIONS_AUDIO_RECORDING)
-            }
+            ActivityCompat.requestPermissions(this,
+                arrayOf(Manifest.permission.RECORD_AUDIO),
+                MY_PERMISSIONS_AUDIO_RECORDING)
         } else {
             // Permission has already been granted
             startRecording()
@@ -189,7 +181,7 @@ class MainActivity : AppCompatActivity() {
                     // permission denied, boo! Disable the
                     // functionality that depends on this permission.
 
-                    changeText1("Permission request denied")
+                    changeText1(MSG_PERMITION_DENIED)
                 }
                 return
             }
