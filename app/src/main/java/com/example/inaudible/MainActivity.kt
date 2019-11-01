@@ -26,10 +26,10 @@ class MainActivity : AppCompatActivity() {
     private var BufferSize = 1024
     private val FFT_N = 512
     private val fsmFreq: IntArray = intArrayOf(19000, 20000, 21000)
-    private var prvCode = 0 // the previous code that is received right before
-    private var lastCode = 0 // the last code that is consumed by the parser
+    private var prvRecvCode = 0 // the previous code that is received right before
+    private var prvConsumedCode = 0 // the last code that is consumed by the parser
 
-    private var lastTimestamp: Long = 0
+    private var lastSilenceTimestamp: Long = 0
 
     private val TIMEOUT_MILLIS = 1000
     private var displayText: String = ""
@@ -92,16 +92,16 @@ class MainActivity : AppCompatActivity() {
 
             if (code == CODE_SILENCE) {
                 val currentTimestamp = System.currentTimeMillis()
-                if (prvCode == CODE_SILENCE) {
-                    if (currentTimestamp - lastTimestamp >= TIMEOUT_MILLIS) {
+                if (prvRecvCode == CODE_SILENCE) {
+                    if (currentTimestamp - lastSilenceTimestamp >= TIMEOUT_MILLIS) {
                         displayText = ""
                         codes.clear()
                     }
                 } else {
-                    lastTimestamp = currentTimestamp
+                    lastSilenceTimestamp = currentTimestamp
                 }
             } else if (0 <= code && code <= 2) {
-                if (code == prvCode) continue
+                if (code == prvRecvCode) continue
 
                 codes.add(code)
             }
@@ -110,7 +110,7 @@ class MainActivity : AppCompatActivity() {
                 var sum = 0
                 var p = 1
                 for (i in 7 downTo 0) {
-                    val t = (if (i==0) lastCode else codes[i-1])
+                    val t = (if (i==0) prvConsumedCode else codes[i-1])
                     if (codes[i] == (t -1 + 3)%3) {
                         //bit 1
                         sum += p
@@ -123,11 +123,11 @@ class MainActivity : AppCompatActivity() {
                 //if (( ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || c== ' '))
                 displayText += c.toString()
 
-                lastCode = codes[7]
+                prvConsumedCode = codes[7]
                 codes.clear()
                 Log.d("clear", "==================")
             }
-            prvCode = code
+            prvRecvCode = code
 
             changeText1(displayText)
         }
