@@ -16,6 +16,7 @@ import android.media.AudioFormat
 import android.util.Log
 import android.widget.TextView
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import java.lang.Math.abs
 import java.lang.Math.random
 import java.sql.Timestamp
@@ -39,6 +40,8 @@ class MainActivity : AppCompatActivity() {
 
     private val TIMEOUT_MILLIS = 1000
     private var displayText: String = ""
+
+    private val MY_PERMISSIONS_AUDIO_RECORDING = 0x0000001
 
     private fun getVisualizedString(freqData: DoubleArray): String {
         var s: String = ""
@@ -133,26 +136,88 @@ class MainActivity : AppCompatActivity() {
             }
             prvCode = code
 
-            runOnUiThread {
-                val text1 : TextView = findViewById(R.id.text1)
-                text1.setText(displayText)
-            }
+            changeText1(displayText);
         }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+    private fun changeText1(str : String) {
+        runOnUiThread {
+            val text1 : TextView = findViewById(R.id.text1)
+            text1.setText(displayText)
+        }
+    }
+    private fun requestAudioPermission() {
+        /* https://developer.android.com/training/permissions/requesting */
 
+        // Here, thisActivity is the current activity
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.RECORD_AUDIO)
+            != PackageManager.PERMISSION_GRANTED) {
+
+            // Permission is not granted
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.RECORD_AUDIO)) {
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+                changeText1("We need your permission for audio recording.")
+            } else {
+                // No explanation needed, we can request the permission.
+                ActivityCompat.requestPermissions(this,
+                    arrayOf(Manifest.permission.RECORD_AUDIO),
+                    MY_PERMISSIONS_AUDIO_RECORDING)
+            }
+        } else {
+            // Permission has already been granted
+            startRecording()
+        }
+
+        /* https://developer.android.com/training/permissions/requesting END */
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int,
+                                            permissions: Array<String>, grantResults: IntArray) {
+        when (requestCode) {
+            MY_PERMISSIONS_AUDIO_RECORDING -> {
+                // If request is cancelled, the result arrays are empty.
+                if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                    // permission was granted, yay! Do the
+                    // contacts-related task you need to do.
+                    startRecording()
+                } else {
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+
+                    changeText1("Permission request denied")
+                }
+                return
+            }
+
+            // Add other 'when' lines to check for other
+            // permissions this app might request.
+            else -> {
+                // Ignore all other requests.
+            }
+        }
+    }
+    private fun startRecording() {
         this.recorder = AudioRecord(MediaRecorder.AudioSource.MIC,
-                RECORDER_SAMPLERATE, RECORDER_CHANNELS,
-                RECORDER_AUDIO_ENCODING, BufferSize)
+            RECORDER_SAMPLERATE, RECORDER_CHANNELS,
+            RECORDER_AUDIO_ENCODING, BufferSize)
         this.recorder!!.startRecording()
 
         recordingThread = Thread(Runnable {
             updateAudioData()
         }, "AudioRecorder Thread")
         recordingThread!!.start()
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        requestAudioPermission()
 
     }
 
